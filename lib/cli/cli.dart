@@ -111,8 +111,8 @@ class TalkCLI {
   void optionSendMessage() async {
     clear();
     try {
-      questionToken();
-      var textMessage = questionTextMessage();
+      askToken();
+      var textMessage = askTextMessage();
       var response = await _talkWebService.sendTextMessage(textMessage);
       _response = 'Send message response: ${response.body}';
     } on Exception {
@@ -124,7 +124,7 @@ class TalkCLI {
   void optionLoadMessages() async {
     clear();
     try {
-      questionToken();
+      askToken();
       var response = await _talkWebService.loadMessages(_token);
       _response = 'Load message responde: ${response.body}';
     } on Exception {
@@ -134,10 +134,10 @@ class TalkCLI {
 
   /// Executes the menu option do configure host and port of the server
   void optionConfigure() {
-    questionHost();
-    questionPort();
-    questionSecurity();
-    questionDevMode();
+    askHost();
+    askPort();
+    askSecurity();
+    askDevMode();
 
     _talkWebService.changeServiceURL(_security, _devMode, _host, _port);
 
@@ -155,27 +155,27 @@ class TalkCLI {
   }
 
   /// ask about service host
-  void questionHost() {
+  void askHost() {
     _host = prompts.get('Host: ', defaultsTo: _host);
   }
 
   /// ask about service port
-  void questionPort() {
+  void askPort() {
     _port = prompts.get('Port: ', defaultsTo: _port);
   }
 
   /// ask about service security (http or https)
-  void questionSecurity() {
+  void askSecurity() {
     _security = prompts.getBool('Enable security: ', defaultsTo: _security);
   }
 
   /// enables dev mode
-  void questionDevMode() {
+  void askDevMode() {
     _devMode = prompts.getBool('Enable devmode: ', defaultsTo: _devMode);
   }
 
   /// ask about the token of a channel
-  void questionToken() {
+  void askToken() {
     _token = prompts.get('Token of a channel: ', defaultsTo: _token);
 
     // stores the token in the Web Service
@@ -183,7 +183,7 @@ class TalkCLI {
   }
 
   /// ask about the message to send to a channel
-  String questionTextMessage() {
+  String askTextMessage() {
     return prompts.get('Messsage: ');
   }
 }
