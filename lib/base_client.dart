@@ -15,71 +15,126 @@ class BaseClient {
   String host;
 
   /// the port of the service
-  String port;
+  String talkPort;
 
-  /// the name of the app
-  String app;
+  /// the port of the users service
+  String usersPort;
+
+  /// the name of the talk app
+  String talkApp;
+
+  /// The name of the user app
+  String usersApp;
 
   /// the service endpoint name
-  String wsEndpoint;
+  String talkEndpoint;
+
+  /// the service endpoint name
+  String usersEndpoint;
 
   /// the socket endpoint name
-  String socketEndpoint;
+  String talkSocketEndpoint;
 
   /// the api version
   String api;
 
-  /// the result url for the Web Service
-  String wsURL;
+  /// the result url for talk service
+  String talkWsURL;
+
+  /// the result url for users service
+  String usersWsURL;
 
   /// the result url for the Web Socket
-  String socketURL;
+  String talkSocketURL;
 
-  /// the token of a channel
+  /// the token of a talk channel
   String token;
 
   /// [bool enableSecurity] indicates if will be used a secure protocol
   /// and [bool devMode] changes the URL of remove for development mode
   BaseClient(bool enableSecurity, bool devMode) {
-    app = 'orion-talk-service';
+    talkApp = 'orion-talk-service';
+    usersApp = 'orion-users-service';
     host = 'localhost';
-    port = '9081';
-    wsEndpoint = 'talk';
-    socketEndpoint = 'talkws';
-    api = 'api/v1.0';
+    talkPort = '9081';
+    usersPort = '9080';
+    talkEndpoint = 'talk';
+    usersEndpoint = 'users';
+    talkSocketEndpoint = 'talkws';
+    api = 'api/v1';
 
-    changeServiceURL(enableSecurity, devMode, host, port);
+    changeServiceURL(enableSecurity, devMode, host, talkPort);
   }
 
   void changeServiceURL(
       bool enableSecurity, bool devMode, String newHost, String newPort) {
     host = newHost;
-    port = newPort;
+    talkPort = newPort;
     _enableSecurityProtocol(enableSecurity);
     _enableDevMode(devMode);
   }
 
   void _enableSecurityProtocol(bool enableSecurity) {
     if (enableSecurity) {
-      wsURL = 'https://';
-      socketURL = 'wss://';
+      talkWsURL = 'https://';
+      usersWsURL = 'https://';
+      talkSocketURL = 'wss://';
     } else {
-      wsURL = 'http://';
-      socketURL = 'ws://';
+      talkWsURL = 'http://';
+      usersWsURL = 'http://';
+      talkSocketURL = 'ws://';
     }
   }
 
   /// cuts the app name from the url to enable dev mode
   void _enableDevMode(bool devMode) {
-    String urlBase;
+    var talkBaseURL = host + ':' + talkPort;
+    var usersBaseURL = host + ':' + usersPort;
+
+    // In dev mode isn't necessary to append the application name
     if (devMode) {
-      urlBase = host + ':' + port;
-      wsURL = wsURL + urlBase + '/' + wsEndpoint + '/' + api + '/';
-      socketURL = socketURL + urlBase + '/' + socketEndpoint + '/';
+      // Talk service URL
+      talkWsURL =
+          talkWsURL + talkBaseURL + '/' + talkEndpoint + '/' + api + '/';
+
+      // Users service URL
+      usersWsURL =
+          usersWsURL + usersBaseURL + '/' + usersEndpoint + '/' + api + '/';
+
+      // Talk Web Socket URL
+      talkSocketURL =
+          talkSocketURL + talkBaseURL + '/' + talkSocketEndpoint + '/';
     } else {
-      urlBase = host + ':' + port;
-      wsURL = wsURL + urlBase + '/' + app + '/' + wsEndpoint + '/' + api + '/';
-      socketURL = socketURL + urlBase + '/' + app + '/' + socketEndpoint + '/';
+      // Talk service URL
+      talkWsURL = talkWsURL +
+          talkBaseURL +
+          '/' +
+          talkApp +
+          '/' +
+          talkEndpoint +
+          '/' +
+          api +
+          '/';
+
+      // Users service URL
+      usersWsURL = usersWsURL +
+          usersBaseURL +
+          '/' +
+          usersApp +
+          '/' +
+          usersEndpoint +
+          '/' +
+          api +
+          '/';
+
+      // Talk Web Socket URL
+      talkSocketURL = talkSocketURL +
+          talkBaseURL +
+          '/' +
+          talkApp +
+          '/' +
+          talkSocketEndpoint +
+          '/';
     }
   }
 }

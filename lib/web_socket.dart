@@ -34,7 +34,7 @@ class TalkWebSocket extends BaseClient {
 
   /// connects to channel using a [String token]
   void connect(String token) {
-    _websocket = WebSocket(socketURL + token);
+    _websocket = WebSocket(talkSocketURL + token);
   }
 
   /// registers a [Function listener] of the connected channel

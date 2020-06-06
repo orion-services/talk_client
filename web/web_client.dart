@@ -23,6 +23,12 @@ void main() {
 /// Examples of how to use TalkWebService and TalkWebSocket clients in
 /// simple Web page
 class WebClientExample {
+  /// Talk Token
+  String _token;
+
+  /// JSON Web Token;
+  String _jwt;
+
   /// Talk Web Service client
   TalkWebService _talkWS;
 
@@ -36,6 +42,7 @@ class WebClientExample {
 
     // adding buttons listeners
     // Web Service
+    querySelector('#btnlogin').onClick.listen(loginHandler);
     querySelector('#btnCreateChannel').onClick.listen(createChannelHandler);
     querySelector('#btnSend').onClick.listen(sendMessageHandler);
 
@@ -51,16 +58,31 @@ class WebClientExample {
     querySelector('#btnChangeHost').onClick.listen(urlHandler);
   }
 
+  /// Handles the [MouseEvent event] of the login button
+  void loginHandler(MouseEvent event) async {
+    try {
+      var user = (querySelector('#user') as InputElement).value;
+      var password = (querySelector('#password') as InputElement).value;
+      var response = await _talkWS.login(user, password);
+      _jwt = response.body;
+    } on Exception catch (e, stacktrace) {
+      _jwt = stacktrace.toString();
+    } finally {
+      appendNode(_jwt);
+    }
+  }
+
   /// Handles the [MouseEvent event] of the button create channel
   void createChannelHandler(MouseEvent event) async {
     String data;
     try {
       // creates a channel in talk service
-      var response = await _talkWS.createChannel();
+      var response = await _talkWS.createChannel(_jwt);
       data = json.decode(response.body)['token'];
     } on Exception {
       data = 'connection refused';
     } finally {
+      _token = data;
       // setting the return message to HTML screen
       appendNode(data);
       (querySelector('#channel') as InputElement).value = data;
@@ -79,7 +101,7 @@ class WebClientExample {
     String data;
     try {
       // sending the message to a channel in talk Service
-      var response = await _talkWS.sendTextMessage(message);
+      var response = await _talkWS.sendTextMessage(message, _token, _jwt);
       data = json.decode(response.body)['message'];
     } on Exception {
       data = 'connection refused';
@@ -125,8 +147,8 @@ class WebClientExample {
     _talkSocket.changeServiceURL(getSecureValue(), getDevelopmentValue(),
         getHostValue(), getPortValue());
 
-    appendNode(_talkWS.wsURL);
-    appendNode(_talkSocket.socketURL);
+    appendNode(_talkWS.talkWsURL);
+    appendNode(_talkSocket.talkSocketURL);
   }
 
   /// [return] a boolean indicating a secure conection or not

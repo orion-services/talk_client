@@ -35,6 +35,15 @@ class TalkCLI {
   // stores a response of a operation
   String _response;
 
+  // stores the user`s e-mail
+  String _email;
+
+  // stores the user`s password
+  String _password;
+
+  // stores the jwt
+  String _jwt;
+
   // the Talk Web Service client
   TalkWebService _talkWebService;
 
@@ -63,6 +72,7 @@ class TalkCLI {
 
     // the main menu options
     var options = [
+      'Login',
       'Create channel',
       'Send message to a channel',
       'Load messages',
@@ -78,18 +88,21 @@ class TalkCLI {
 
     // executing actions according the options
     if (cli == options[0]) {
+      // Login
+      await optionLogin();
+    } else if (cli == options[1]) {
       // create channel
       await optionCreateChannel();
-    } else if (cli == options[1]) {
+    } else if (cli == options[2]) {
       // send message
       await optionSendMessage();
-    } else if (cli == options[2]) {
+    } else if (cli == options[3]) {
       // load messages
       await optionLoadMessages();
-    } else if (cli == options[3]) {
+    } else if (cli == options[4]) {
       // Configure
       optionConfigure();
-    } else if (cli == options[4]) {
+    } else if (cli == options[5]) {
       loop = false;
       clear();
     }
@@ -97,9 +110,24 @@ class TalkCLI {
   }
 
   /// Executes the menu option to create a new channel
+  void optionLogin() async {
+    try {
+      clear();
+      askEmail();
+      askPassword();
+
+      var response = await _talkWebService.login(_email, _password);
+      _jwt = response.body;
+      _response = 'JWTL ${_jwt}';
+    } on Exception {
+      _response = 'Connection refused';
+    }
+  }
+
+  /// Executes the menu option to create a new channel
   void optionCreateChannel() async {
     try {
-      var response = await _talkWebService.createChannel();
+      var response = await _talkWebService.createChannel(_jwt);
       _token = json.decode(response.body)['token'];
       _response = 'Create channel response: ${response.body}';
     } on Exception {
@@ -113,7 +141,8 @@ class TalkCLI {
     try {
       askToken();
       var textMessage = askTextMessage();
-      var response = await _talkWebService.sendTextMessage(textMessage);
+      var response =
+          await _talkWebService.sendTextMessage(textMessage, _token, _jwt);
       _response = 'Send message response: ${response.body}';
     } on Exception {
       _response = 'Connection refused';
@@ -125,7 +154,7 @@ class TalkCLI {
     clear();
     try {
       askToken();
-      var response = await _talkWebService.loadMessages(_token);
+      var response = await _talkWebService.loadMessages(_token, _jwt);
       _response = 'Load message responde: ${response.body}';
     } on Exception {
       _response = 'Connection refused';
@@ -141,7 +170,7 @@ class TalkCLI {
 
     _talkWebService.changeServiceURL(_security, _devMode, _host, _port);
 
-    _response = 'Web Service URL: ' + _talkWebService.wsURL;
+    _response = 'Web Service URL: ' + _talkWebService.talkApp;
   }
 
   /// clear the console
@@ -177,9 +206,16 @@ class TalkCLI {
   /// ask about the token of a channel
   void askToken() {
     _token = prompts.get('Token of a channel: ', defaultsTo: _token);
+  }
 
-    // stores the token in the Web Service
-    _talkWebService.token = _token;
+  /// ask about the user's e-mail
+  void askEmail() {
+    _email = prompts.get('E-mail: ', defaultsTo: _email);
+  }
+
+  /// ask about the user's password
+  void askPassword() {
+    _password = prompts.get('Password: ', defaultsTo: _password);
   }
 
   /// ask about the message to send to a channel
