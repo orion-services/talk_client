@@ -32,7 +32,7 @@ class TalkWebService extends BaseClient {
   /// Web Serive: creates a Channel in the Oriton Talk microservices
   /// and returns [Future<http.Response>]
   Future<http.Response> createChannel() {
-    var url = wsURL + 'create';
+    var url = wsURL + 'createChannel';
     return http.get(url);
   }
 

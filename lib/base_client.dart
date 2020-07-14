@@ -46,7 +46,7 @@ class BaseClient {
     port = '9081';
     wsEndpoint = 'talk';
     socketEndpoint = 'talkws';
-    api = 'api/v1.0';
+    api = 'api/v1';
 
     changeServiceURL(enableSecurity, devMode, host, port);
   }

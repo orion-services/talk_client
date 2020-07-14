@@ -57,7 +57,10 @@ class WebClientExample {
     try {
       // creates a channel in talk service
       var response = await _talkWS.createChannel();
-      data = json.decode(response.body)['token'];
+
+      data = (response.statusCode == 200)
+          ? data = json.decode(response.body)['token']
+          : 'Server error:  ${response.statusCode}';
     } on Exception {
       data = 'connection refused';
     } finally {
@@ -80,7 +83,9 @@ class WebClientExample {
     try {
       // sending the message to a channel in talk Service
       var response = await _talkWS.sendTextMessage(message);
-      data = json.decode(response.body)['message'];
+      data = (response.statusCode == 200)
+          ? data = json.decode(response.body)['message']
+          : 'Server error:  ${response.statusCode}';
     } on Exception {
       data = 'connection refused';
     } finally {

@@ -101,7 +101,12 @@ class TalkCLI {
     try {
       var response = await _talkWebService.createChannel();
       _token = json.decode(response.body)['token'];
-      _response = 'Create channel response: ${response.body}';
+
+      if (response.statusCode == 200) {
+        _response = 'Channel: ${response.body}';
+      } else {
+        _response = 'Server error: ${response.statusCode} ';
+      }
     } on Exception {
       _response = 'Connection refused';
     }
@@ -114,7 +119,12 @@ class TalkCLI {
       askToken();
       var textMessage = askTextMessage();
       var response = await _talkWebService.sendTextMessage(textMessage);
-      _response = 'Send message response: ${response.body}';
+
+      if (response.statusCode == 200) {
+        _response = 'Text message: ${response.body}';
+      } else {
+        _response = 'Server error: ${response.statusCode} ';
+      }
     } on Exception {
       _response = 'Connection refused';
     }
@@ -126,7 +136,12 @@ class TalkCLI {
     try {
       askToken();
       var response = await _talkWebService.loadMessages(_token);
-      _response = 'Load message responde: ${response.body}';
+
+      if (response.statusCode == 200) {
+        _response = 'Channel: ${response.body}';
+      } else {
+        _response = 'Server error: ${response.statusCode} ';
+      }
     } on Exception {
       _response = 'Connection refused';
     }
