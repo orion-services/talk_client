@@ -56,6 +56,8 @@ class WebClientExample {
     querySelector('#secure').onClick.listen(urlHandler);
     querySelector('#development').onClick.listen(urlHandler);
     querySelector('#btnChangeHost').onClick.listen(urlHandler);
+
+    _jwt = null;
   }
 
   /// Handles the [MouseEvent event] of the login button
@@ -64,74 +66,110 @@ class WebClientExample {
       var user = (querySelector('#user') as InputElement).value;
       var password = (querySelector('#password') as InputElement).value;
       var response = await _talkWS.login(user, password);
-      _jwt = response.body;
+      if (response.statusCode == 200) {
+        _jwt = response.body;
+        appendNode(_jwt);
+      } else {
+        appendNode('Please, autenticate first');
+      }
     } on Exception catch (e, stacktrace) {
       _jwt = stacktrace.toString();
-    } finally {
-      appendNode(_jwt);
     }
   }
 
   /// Handles the [MouseEvent event] of the button create channel
   void createChannelHandler(MouseEvent event) async {
     String data;
-    try {
-      // creates a channel in talk service
-      var response = await _talkWS.createChannel(_jwt);
-      data = json.decode(response.body)['token'];
-    } on Exception {
-      data = 'connection refused';
-    } finally {
-      _token = data;
-      // setting the return message to HTML screen
-      appendNode(data);
-      (querySelector('#channel') as InputElement).value = data;
+    if (_jwt != null) {
+      try {
+        // creates a channel in talk service
+        var response = await _talkWS.createChannel(_jwt);
+        if (response.statusCode == 200) {
+          data = json.decode(response.body)['token'];
+        } else {
+          data = 'Server error:  ${response.statusCode}';
+        }
+      } on Exception {
+        data = 'Connection refused';
+      } finally {
+        _token = data;
+        // setting the return message to HTML screen
+        appendNode(data);
+        (querySelector('#channel') as InputElement).value = data;
+      }
+    } else {
+      appendNode('Please, autenticate first');
     }
   }
 
   /// Handles the [MouseEvent event] of the button send message
   void sendMessageHandler(MouseEvent event) async {
-    // Geting the token of a channel from input text and
-    // setting the token to Talk Web Service client
-    _talkWS.token = (querySelector('#channel') as InputElement).value;
+    if (_jwt != null) {
+      // Geting the token of a channel from input text and
+      // setting the token to Talk Web Service client
+      _talkWS.token = (querySelector('#channel') as InputElement).value;
+      // geting the message from input text
+      var message = (querySelector('#sendMessage') as InputElement).value;
 
-    // geting the message from input text
-    var message = (querySelector('#sendMessage') as InputElement).value;
+      String data;
+      try {
+        // sending the message to a channel in talk Service
+        var response = await _talkWS.sendTextMessage(message, _token, _jwt);
 
-    String data;
-    try {
-      // sending the message to a channel in talk Service
-      var response = await _talkWS.sendTextMessage(message, _token, _jwt);
-      data = json.decode(response.body)['message'];
-    } on Exception {
-      data = 'connection refused';
-    } finally {
-      // setting the return message to HTML screen
-      appendNode(data);
+        if (response.statusCode == 200) {
+          data = json.decode(response.body)['message'];
+        } else {
+          data = 'Server error:  ${response.statusCode}';
+        }
+      } on Exception {
+        data = 'Connection refused';
+      } finally {
+        // setting the return message to HTML screen
+        appendNode(data);
+      }
+    } else {
+      appendNode('Please, autenticate first');
     }
   }
 
   /// Handles the [MouseEvent event] of the button to connect with a
   /// Web Socket channel
   void socketConnectHandler(MouseEvent event) {
-    // Geting the token of a channel from input text and
-    // setting the token to Talk Web Socket client
-    _talkSocket.token = (querySelector('#channel') as InputElement).value;
-    _talkSocket.connect(_talkSocket.token);
-    _talkSocket.registerListener(socketListener);
+    if (_jwt != null) {
+      // Geting the token of a channel from input text and
+      // setting the token to Talk Web Socket client
+      _talkSocket.token = (querySelector('#channel') as InputElement).value;
+      if (_talkSocket.token != '') {
+        _talkSocket.connect(_talkSocket.token);
+        _talkSocket.registerListener(socketListener);
+      } else {
+        appendNode('Please, inform a valid token of a channel');
+      }
+    } else {
+      appendNode('Please, autenticate first');
+    }
   }
 
   /// Handles the [MouseEvent event] of the button to send a message to a
   /// Web Socket channel
   void socketSendMessageHandler(MouseEvent event) {
-    var message = (querySelector('#sendMessage') as InputElement).value;
-    _talkSocket.send(message);
+    if (_jwt != null) {
+      var message = (querySelector('#sendMessage') as InputElement).value;
+      _talkSocket.send(message);
+    } else {
+      appendNode('Please, autenticate first');
+    }
   }
 
   /// Handles the [MouseEvent event] of the button to close a connect with a channel
   /// through a web socket
   void socketCloseHandler(MouseEvent event) {
-    _talkSocket.close();
+    if (_jwt != null) {
+      _talkSocket.close();
+      appendNode('Closed');
+    } else {
+      appendNode('Please, autenticate first');
+    }
   }
 
   /// listens the [MessageEvent event] through Web Socket channel

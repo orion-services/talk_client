@@ -1,5 +1,3 @@
-import 'dart:io';
-
 /// Copyright 2020 Orion Services
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -38,9 +36,9 @@ class TalkWebService extends BaseClient {
   /// Web Serive: creates a Channel in the Orion Talk microservices
   /// and returns [Future<http.Response>]
   Future<http.Response> createChannel(String jwt) {
-    var url = talkWsURL + 'create';
-    return http
-        .get(url, headers: {HttpHeaders.authorizationHeader: 'Bearer ' + jwt});
+    var url = talkWsURL + 'createChannel';
+    return http.get(url);
+    //return http.get(url, headers: {HttpHeaders.authorizationHeader: 'Bearer ' + jwt});
   }
 
   /// Web Serive: sends a [message] to a channel through a [token] and
@@ -48,17 +46,17 @@ class TalkWebService extends BaseClient {
   Future<http.Response> sendTextMessage(
       String message, String token, String jwt) {
     var url = talkWsURL + 'send';
-    return http.post(url,
-        headers: {HttpHeaders.authorizationHeader: 'Bearer ' + jwt},
-        body: {'token': token, 'message': message});
+    return http.post(url, body: {'token': token, 'message': message});
+    //return http.post(url,
+    //headers: {HttpHeaders.authorizationHeader: 'Bearer ' + jwt},
+    //body: {'token': token, 'message': message});
   }
 
   /// Web Serive: loads a channel through a [token] to retrieve all messages
   /// and returns [Future<http.Response>]
   Future<http.Response> loadMessages(String token, String jwt) {
     var url = talkWsURL + 'load' + '/' + token;
-    print(url);
-    return http
-        .get(url, headers: {HttpHeaders.authorizationHeader: 'Bearer ' + jwt});
+    return http.get(url);
+    //return http.get(url, headers: {HttpHeaders.authorizationHeader: 'Bearer ' + jwt});
   }
 }

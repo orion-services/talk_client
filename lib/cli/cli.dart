@@ -52,6 +52,7 @@ class TalkCLI {
     _port = '9081';
     _token = '';
     _response = '';
+    _jwt = null;
 
     // Seting the secure to false and development to true
     _security = false;
@@ -92,13 +93,19 @@ class TalkCLI {
       await optionLogin();
     } else if (cli == options[1]) {
       // create channel
-      await optionCreateChannel();
+      (_jwt != null)
+          ? await optionCreateChannel()
+          : _response = 'Please login first';
     } else if (cli == options[2]) {
       // send message
-      await optionSendMessage();
+      (_jwt != null)
+          ? await optionSendMessage()
+          : _response = 'Please login first';
     } else if (cli == options[3]) {
       // load messages
-      await optionLoadMessages();
+      (_jwt != null)
+          ? await optionLoadMessages()
+          : _response = 'Please login first';
     } else if (cli == options[4]) {
       // Configure
       optionConfigure();
@@ -129,7 +136,12 @@ class TalkCLI {
     try {
       var response = await _talkWebService.createChannel(_jwt);
       _token = json.decode(response.body)['token'];
-      _response = 'Create channel response: ${response.body}';
+
+      if (response.statusCode == 200) {
+        _response = 'Channel: ${response.body}';
+      } else {
+        _response = 'Server error: ${response.statusCode} ';
+      }
     } on Exception {
       _response = 'Connection refused';
     }
@@ -143,7 +155,12 @@ class TalkCLI {
       var textMessage = askTextMessage();
       var response =
           await _talkWebService.sendTextMessage(textMessage, _token, _jwt);
-      _response = 'Send message response: ${response.body}';
+
+      if (response.statusCode == 200) {
+        _response = 'Text message: ${response.body}';
+      } else {
+        _response = 'Server error: ${response.statusCode} ';
+      }
     } on Exception {
       _response = 'Connection refused';
     }
@@ -155,7 +172,12 @@ class TalkCLI {
     try {
       askToken();
       var response = await _talkWebService.loadMessages(_token, _jwt);
-      _response = 'Load message responde: ${response.body}';
+
+      if (response.statusCode == 200) {
+        _response = 'Channel: ${response.body}';
+      } else {
+        _response = 'Server error: ${response.statusCode} ';
+      }
     } on Exception {
       _response = 'Connection refused';
     }
@@ -170,7 +192,7 @@ class TalkCLI {
 
     _talkWebService.changeServiceURL(_security, _devMode, _host, _port);
 
-    _response = 'Web Service URL: ' + _talkWebService.talkApp;
+    _response = 'Talk Web Service: ' + _talkWebService.talkWsURL;
   }
 
   /// clear the console
